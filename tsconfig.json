@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "moduleResolution": "node",
+  },
+  "include": [
+    "node_modules",
+    "src"
+  ]
+}
