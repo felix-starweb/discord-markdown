@@ -1,14 +1,16 @@
 # [1.0.1] (2023-10-09)
 
--   Removed module.exports
--   Added Changelog to package.json
+- Added
+  - Changelog to package.json
+- Removed
+  - Removed module.exports
 
 # [1.0.0] (2023-10-09)
-
-  - Added Vue support
-  - Added Markdown parsing according to Discord spec
-  - Added basic README
-  - Added tests
-  - Added Rollup config
-  - Added Eslint rules
-  - Added tsconfig
+- Added
+  - Vue support
+  - Markdown parsing according to Discord spec
+  - basic README
+  - tests
+  - Rollup config
+  - Eslint rules
+  - tsconfig
