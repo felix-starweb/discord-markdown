@@ -491,5 +491,3 @@ const export_obj = {
 };
 
 export default export_obj;
-
-module.exports = export_obj;
