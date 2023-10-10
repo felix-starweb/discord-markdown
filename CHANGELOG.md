@@ -1,3 +1,8 @@
+# [1.0.2] (2023-10-10)
+
+- Added
+  - Missing export to index.d.ts
+
 # [1.0.1] (2023-10-09)
 
 - Added

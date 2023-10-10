@@ -3,3 +3,5 @@ declare module '@vue/runtime-core' {
     $md_render: Function,
   }
 }
+
+export {}
