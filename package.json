@@ -3,7 +3,8 @@
   "name": "@felixrydberg/discord-markdown",
   "version": "1.0.2",
   "description": "A markdown parser that matches Discords markdown spec.",
-  "main": "./src/index.js",
+  "main": "./dist/index.js",
+  "source": "./src/index.js",
   "types": "./src/index.d.ts",
   "files": [
     "./dist",
@@ -27,8 +28,8 @@
   "license": "MIT",
   "private": false,
   "dependencies": {
+    "@khanacademy/simple-markdown": "^0.10.2",
     "highlight.js": "^11.2.0",
-    "simple-markdown": "^0.7.3",
     "tslib": "^2.6.2"
   },
   "devDependencies": {

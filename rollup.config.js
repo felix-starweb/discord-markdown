@@ -7,7 +7,7 @@ export default [
     input: './src/index.js',
     output: {
       format: 'es',
-      file: 'dist/discord-markdown.min.js',
+      file: 'dist/index.js',
       name: 'discord-markdown',
     },
     plugins: [

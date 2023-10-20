@@ -1,6 +1,6 @@
 'use strict';
 
-import markdown from 'simple-markdown';
+import markdown from '@khanacademy/simple-markdown';
 import highlightjs from 'highlight.js';
 
 const patterns = {
@@ -24,11 +24,13 @@ const patterns = {
   underline: /^(__)((?:(?!\1).)+)\1/,
   strikethrough: /^(~~)((?:(?!~~).)+)\1/,
 
-  heading: /^(#{1,3}\s)(.*)/,
-  link: /^\[([^\]]+)\]\((https?:\/\/[^\s]+)\)$/,
-  unwrap_link: /^<(\[[^\]]+\]\((https?:\/\/[^\s]+)\))>$/,
-  unordered_lists: /^( *)((?:[*+-]|\d+\.)) [\s\S]+?(?:\n{2,}(?! )(?!\1(?:[*+-]|\d+\.) )\n*|\s*\n*$)/,
-  ordered_lists: /^([\n]? *)((?:[0-9.]|\d+\.)) [\s\S]+?(?:\n{2,}(?! )(?!\1(?:[0-9.]|\d+\.) )\n*|\s*\n*$)/,
+  heading: /^ *(#{1,3})([^\n]+?)#* *(?:\n *)/,
+  autolink: /^[^<]([^: >]+:\/[^ >]+)[^>]/,
+  unwrap_autolink: /^<([^: >]+:\/[^ >]+)>/,
+  link: /^\[([^\]]+)\]\(([(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&=]*))\)/,
+  unwrap_link: /^\<(\[[^\]]+\]\([(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&=]*)\))\>/,
+  unordered_lists: /^( *)((?:[*+-]|\d+\.)) [\s\S]+?(?:\n(?!\1(?:[*+-]|\d+\.|\s*) )|$)/,
+  ordered_lists: /^( *)((?:\d.|\d+\.)) [\s\S]+?(?:\n(?!\1(?:\d.|\d+\.|\s*) )|$)/,
 
   blockQuote: {
     match: {
@@ -40,22 +42,35 @@ const patterns = {
       true: /^ *>>> ?/,
       false: /^ *> ?/gm,
     },
-  }
+  },
+  codeBlock: /^```(([a-z0-9+#]+?)\n+)?\n*([^]+?)\n*```/i,
 };
 
 const rules = {
   // General Rules
   text: Object.assign({ }, markdown.defaultRules.text, {
-    match: source => patterns.text.exec(source),
+    match: (source, state) => {
+      const initial = state.inline;
+      state.inline = true;
+      const result = markdown.inlineRegex(patterns.text)(source, state);
+      state.inline = initial;
+      return result;
+    },
     html: function (node, output, state) {
-      if (state.escapeHTML)
+      if (state.escapeHTML){
         return markdown.sanitizeText(node.content);
-
+      }
       return node.content;
     }
   }),
   br: Object.assign({ }, markdown.defaultRules.br, {
-    match: markdown.anyScopeRegex(patterns.br),
+    // match: (source, state, prevCapture) => {
+    //   console.log(source)
+    //   return markdown.anyScopeRegex(patterns.br)(source, state, prevCapture)
+    // },
+    html: (node) => {
+      return '<br>';
+    },
   }),
 
   // Discord Mentions
@@ -67,7 +82,7 @@ const rules = {
         id: capture[1]
       };
     },
-    html: (node, output, state) => { return getHTML('span', state.mentions.user(node), { class: 'd-mention d-user' }, state); }
+    html: (node, output, state) => { return getHTML('span', state.mentions.user(node), { class: 'd-mention d-user' }); }
   },
   '#channel': {
     order: markdown.defaultRules.strong.order,
@@ -77,7 +92,7 @@ const rules = {
         id: capture[1]
       };
     },
-    html: (node, output, state) => { return getHTML('span', state.mentions.channel(node), { class: 'd-mention d-channel' }, state); }
+    html: (node, output, state) => { return getHTML('span', state.mentions.channel(node), { class: 'd-mention d-channel' }); }
   },
   '@role': {
     order: markdown.defaultRules.strong.order,
@@ -87,7 +102,7 @@ const rules = {
         id: capture[1]
       };
     },
-    html: (node, output, state) => { return getHTML('span', state.mentions.role(node), { class: 'd-mention d-role' }, state); }
+    html: (node, output, state) => { return getHTML('span', state.mentions.role(node), { class: 'd-mention d-role' }); }
   },
   '@everyone': {
     order: markdown.defaultRules.strong.order,
@@ -95,7 +110,7 @@ const rules = {
     parse: () => {
       return {};
     },
-    html: (node, output, state) => { return getHTML('span', state.mentions.everyone(node), { class: 'd-mention d-user' }, state); }
+    html: (node, output, state) => { return getHTML('span', state.mentions.everyone(node), { class: 'd-mention d-user' }); }
   },
   '@here': {
     order: markdown.defaultRules.strong.order,
@@ -103,7 +118,7 @@ const rules = {
     parse: () => {
       return {};
     },
-    html: (node, output, state) => { return getHTML('span', state.mentions.here(node), { class: 'd-mention d-user' }, state); }
+    html: (node, output, state) => { return getHTML('span', state.mentions.here(node), { class: 'd-mention d-user' }); }
   },
 
   // Text Formatting
@@ -187,11 +202,17 @@ const rules = {
     },
     html: (node, output, state) => { return getHTML('span', node.content, { class: 'd-text d-strikethrough' }, state); }
   },
+  em: Object.assign({ }, markdown.defaultRules.em, {
+    parse: function (capture, parse, state) {
+      const parsed = markdown.defaultRules.em.parse(capture, parse, Object.assign({ }, state, { inEmphasis: true }));
+      return state.inEmphasis ? parsed.content : parsed;
+    },
+  }),
 
   // Organizational Text Formatting 
   heading: Object.assign({}, markdown.defaultRules.heading, {
-    match: source => patterns.heading.exec(source),
-    html: (node, output, state) => { return getHTML(`h${node.level - 1}`, output(node.content, state), { class: 'd-header' }, state); }
+    match: markdown.blockRegex(patterns.heading),
+    html: (node, output, state) => { return getHTML(`h${node.level}`, output(node.content, state), { class: 'd-header' }, state); }
   }),
   unordered_lists : Object.assign({}, markdown.defaultRules.list, {
     match: source => patterns.unordered_lists.exec(source),
@@ -222,7 +243,7 @@ const rules = {
       };
     },
     html: (node, output, state) => {
-      const listItems = getNestedHTML(node.items, {type: 'ul', classes: {list: 'd-list d-unordered-lists'}});
+      const listItems = getNestedHTML(node.items, {type: 'ul', classes: {list: 'd-list d-unordered-lists', item: 'd-list-item'}});
       return getHTML('ul', listItems, {class: 'd-list d-unordered-lists d-list-parent'});
     },
   }),
@@ -255,7 +276,7 @@ const rules = {
       };
     },
     html: (node, output, state) => {
-      const listItems = getNestedHTML(node.items, {type: 'ol', classes: {list: 'd-list d-ordered-lists'}});
+      const listItems = getNestedHTML(node.items, {type: 'ol', classes: {list: 'd-list d-ordered-lists', item: 'd-list-item'}});
       return getHTML('ol', listItems, {class: 'd-list d-ordered-lists d-list-parent'});
     },
   }),
@@ -279,7 +300,13 @@ const rules = {
 
   // Code block
   codeBlock: Object.assign({ }, markdown.defaultRules.codeBlock, {
-    match: markdown.inlineRegex(/^```(([a-z0-9-]+?)\n+)?\n*([^]+?)\n*```/i),
+    match: (source, state, prevCapture) => {
+      const initial = state.inline;
+      state.inline = true;
+      const capture = markdown.inlineRegex(patterns.codeBlock)(source, state, prevCapture);
+      state.inline = initial;
+      return capture;
+    },
     parse: (capture, parse, state) => {
       return {
         lang: (capture[2] || '').trim(),
@@ -289,12 +316,18 @@ const rules = {
     },
     html: (node, output, state) => {
       let code;
-      if (node.lang && highlightjs.getLanguage(node.lang))
+      if (node.lang && highlightjs.getLanguage(node.lang)) {
         code = highlightjs.highlight(node.content, { language: node.lang, ignoreIllegals: true });
-
+      }
       return getHTML('pre', getHTML(
-        'code', code ? code.value : markdown.sanitizeText(node.content), { class: `hljs${code ? ' ' + code.language : ''}` }, state
+        'code', code ? code.value : markdown.sanitizeText(node.content), { class: `hljs ${code ? 'language-' + code.language : ''}` }, state
       ), null, state);
+    }
+  }),
+  inlineCode: Object.assign({ }, markdown.defaultRules.inlineCode, {
+    match: source => markdown.defaultRules.inlineCode.match.regex.exec(source),
+    html: (node, output, state) => {
+      return getHTML('code', markdown.sanitizeText(node.content.trim()), {class: 'd-inline-code'});
     }
   }),
 
@@ -315,19 +348,67 @@ const rules = {
 
 const embeded = {
   link: Object.assign({}, markdown.defaultRules.link, {
-    match: source => patterns.link.exec(source),
-    html: (node, output, state) => { return getHTML('a', output(node.content, state), { class: 'd-masked-links', href: node.target }); }
+    match: (source, state) => {
+      const initial = state.inline;
+      state.inline = true;
+      const result = markdown.inlineRegex(patterns.link)(source, state);
+      state.inline = initial;
+      return result;
+    },
+    html: (node, output, state) => { return getHTML('a', output(node.content, state), { class: 'd-masked-link', href: node.target }); }
   }),
   unwrap_link: Object.assign({}, markdown.defaultRules.link, {
-    order: markdown.defaultRules.link.order,
-    match: source => patterns.unwrap_link.exec(source),
+    match: (source, state) => {
+      const initial = state.inline;
+      state.inline = true;
+      const result = markdown.inlineRegex(patterns.unwrap_link)(source, state);
+      state.inline = initial;
+      return result;
+    },
     parse: (capture) => {
       return {
-        content: capture[1]
+        content: capture[1],
       };
     },
-    html: (node, output, state) => { return node.content; }
-  })
+    html: (node, output, state) => {
+      if (state.escapeHTML) {
+        return markdown.sanitizeText(node.content);
+      }
+      return node.content;
+    }
+  }),
+  autolink: Object.assign({}, markdown.defaultRules.autolink, {
+    order: markdown.defaultRules.link.order + 1,
+    match: (source, state) => {
+      const initial = state.inline;
+      state.inline = true;
+      const result = markdown.inlineRegex(patterns.autolink)(source, state);
+      state.inline = initial;
+      return result;
+    },
+    parse: (capture) => {
+      return {
+        content: capture[0] 
+      };
+    },
+    html: (node, output, state) => { return getHTML('a', node.content, { class: 'd-auto-link', href: node.content }); }
+  }),
+  unwrap_autolink: Object.assign({}, markdown.defaultRules.autolink, {
+    order: markdown.defaultRules.link.order + 1,
+    match: (source, state) => {
+      const initial = state.inline;
+      state.inline = true;
+      const result = markdown.inlineRegex(patterns.unwrap_autolink)(source, state);
+      state.inline = initial;
+      return result;
+    },
+    parse: (capture) => {
+      return {
+        content: capture[1] 
+      };
+    },
+    html: (node, output, state) => { return getHTML('a', node.content, { class: 'd-auto-link', href: node.content }); }
+  }),
 };
 
 /**
@@ -335,6 +416,16 @@ const embeded = {
  * @param {String} tag Wrapping HTML tag.
  * @param {String} content Content of element.
  * @param {Object} attributes Attributes of element.
+ * @param {Object} [state] Simplemarkdown state object.
+ * @param {Boolean} [state.inline=false] Simplemarkdown state object.
+ * @param {Boolean} [state.inQuote=false] Simplemarkdown state object.
+ * @param {Boolean} [state.inEmphasis=false] Simplemarkdown state object.
+ * @param {Object} [state.mentions] Simplemarkdown state object.
+ * @param {Function} [state.mentions.user] Simplemarkdown state object.
+ * @param {Function} [state.mentions.channel] Simplemarkdown state object.
+ * @param {Function} [state.mentions.role] Simplemarkdown state object.
+ * @param {Function} [state.mentions.everyone] Simplemarkdown state object.
+ * @param {Function} [state.mentions.here] Simplemarkdown state object.
  * @param {Boolean} [closed=true] Set to false if element is single tag.
  * @returns {String}
 */
@@ -354,7 +445,10 @@ const getHTML = (tag, content, attributes = {}, closed = true) => {
  * Parses provided array of nested HTML into one string.
  * @param {Array} items Items to be converted.
  * @param {Object} options Options for parser.
- * @param {String} options Options for parser.
+ * @param {String} options.type List parent type.
+ * @param {Object} options.classes Custom classes.
+ * @param {Object} options.classes.item Custom class for items.
+ * @param {Object} options.classes.list Custom class for lists.
 
  * @returns {String}
 */
@@ -367,10 +461,9 @@ const getNestedHTML = (items, options = {
 }) => {
   const { type, classes } = options;
   let result = '';
-
   for (let i = 0; i < items.length; i++) {
     const element = items[i];
-    const has_children = element.items.length > 0;
+    const has_children = element.items ? element.items.length > 0 : false;
     if (has_children) {
       result += getHTML('li', element.text + getHTML(type, getNestedHTML(element.items, options), {class: classes.list}), {class: classes.item});
     } else {
@@ -386,9 +479,8 @@ const getNestedHTML = (items, options = {
  * @param {Object} [options] Options for parser.
  * @param {Boolean} [options.embed=true] If links should be embeded.
  * @param {Boolean} [options.includeDefault=true] If default rules are to be used.
- * @param {('html'|'react')} [options.renderType="html"] If default rules are to be used.
  * @param {Object} [state] Simplemarkdown state object.
- * @param {Boolean} [state.inline=true] Simplemarkdown state object.
+ * @param {Boolean} [state.inline=false] Simplemarkdown state object.
  * @param {Boolean} [state.inQuote=false] Simplemarkdown state object.
  * @param {Boolean} [state.inEmphasis=false] Simplemarkdown state object.
  * @param {Object} [state.mentions] Simplemarkdown state object.
@@ -405,16 +497,16 @@ const getNestedHTML = (items, options = {
  *  html?: Function,
  * }>} [extensions] Rule extensions for parser.
  */
-const render = (
+export const render = (
   source,
-  options = { includeDefault: true, classes: true, embed: true, renderType: 'html' },
+  options = { includeDefault: true, embed: true },
   state = {},
   extensions = []
 ) => {
-  let { includeDefault, embed, renderType } = options;
+  let { includeDefault, embed } = options;
   const _rules = {};
   const _state = {
-    inline: true,
+    inline: false,
     inQuote: false,
     inEmphasis: false,
     escapeHTML: true,
@@ -425,7 +517,7 @@ const render = (
       role: node => '@' + markdown.sanitizeText(node.id),
       everyone: () => '@everyone',
       here: () => '@here'
-    }
+    },
   };
 
   if (includeDefault == null) {
@@ -433,9 +525,6 @@ const render = (
   }
   if (embed == null) {
     embed = true;
-  }
-  if (renderType == null) {
-    renderType = 'html';
   }
 
   if (includeDefault) {
@@ -456,9 +545,8 @@ const render = (
     };
     Object.defineProperties(_rules, extension);
   }
-
   const parser = markdown.parserFor(_rules);
-  const renderer = markdown.outputFor(_rules, renderType);
+  const renderer = markdown.outputFor(_rules, 'html');
 
   return renderer(parser(source, _state), _state);
 };
@@ -467,27 +555,28 @@ const export_obj = {
   /**
    * Installs plugin as globalProperty for Vue
    */
-  install: (app, options = {inject_instances: false}) => {
+  install: (app, options = {
+    inject_instances: false,
+    inject_parsers: false,
+  }) => {
     const { globalProperties } = app.config;
-    const definePropertyOptions = { writable: false, readable: false };
+    const definePropertyOptions = { writable: false, readable: true };
     Object.defineProperty(globalProperties, '$md_render', { value: render, ...definePropertyOptions });
     if (options.inject_instances) {
       Object.defineProperty(globalProperties, '$simple_markdown', { value: markdown, ...definePropertyOptions });
       Object.defineProperty(globalProperties, '$highlightjs', { value: highlightjs, ...definePropertyOptions });
+    }
+    if (options.inject_parsers) {
+      Object.defineProperty(globalProperties, '$getNestedHTML', { value: getNestedHTML, ...definePropertyOptions });
+      Object.defineProperty(globalProperties, '$getHTML', { value: getHTML, ...definePropertyOptions });
     }
   },
   /**
    * Parses provided source into HTML
    */
   render,
-  /**
-   * simple-markdown instance
-   */
-  simple_markdown: markdown,
-  /**
-   * highlight.js instance
-   */
-  highlightjs
+  getNestedHTML,
+  getHTML,
 };
 
 export default export_obj;

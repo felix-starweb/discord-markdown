@@ -1,0 +1,84 @@
+.theme-light pre code.hljs {
+  display: block;
+  overflow-x: auto;
+  padding: 1em;
+}
+
+.theme-light code.hljs {
+  padding: 3px 5px;
+}
+
+.theme-light .hljs {
+  color: #383a42;
+  background: #fafafa;
+}
+
+.theme-light .hljs-comment,
+.theme-light .hljs-quote {
+  color: #a0a1a7;
+  font-style: italic;
+}
+
+.theme-light .hljs-doctag,
+.theme-light .hljs-formula,
+.theme-light .hljs-keyword {
+  color: #a626a4;
+}
+
+.theme-light .hljs-deletion,
+.theme-light .hljs-name,
+.theme-light .hljs-section,
+.theme-light .hljs-selector-tag,
+.theme-light .hljs-subst {
+  color: #e45649;
+}
+
+.theme-light .hljs-literal {
+  color: #0184bb;
+}
+
+.theme-light .hljs-addition,
+.theme-light .hljs-attribute,
+.theme-light .hljs-meta .hljs-string,
+.theme-light .hljs-regexp,
+.theme-light .hljs-string {
+  color: #50a14f;
+}
+
+.theme-light .hljs-attr,
+.theme-light .hljs-number,
+.theme-light .hljs-selector-attr,
+.theme-light .hljs-selector-class,
+.theme-light .hljs-selector-pseudo,
+.theme-light .hljs-template-variable,
+.theme-light .hljs-type,
+.theme-light .hljs-variable {
+  color: #986801;
+}
+
+.theme-light .hljs-bullet,
+.theme-light .hljs-link,
+.theme-light .hljs-meta,
+.theme-light .hljs-selector-id,
+.theme-light .hljs-symbol,
+.theme-light .hljs-title {
+  color: #4078f2;
+}
+
+.theme-light .hljs-built_in,
+.theme-light .hljs-class .hljs-title,
+.theme-light .hljs-title.class_ {
+  color: #c18401;
+}
+
+.theme-light .hljs-emphasis {
+  font-style: italic;
+}
+
+.theme-light .hljs-strong {
+  font-weight: 700;
+}
+
+.theme-light .hljs-link {
+  text-decoration: underline;
+}

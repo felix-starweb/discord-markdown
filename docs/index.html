@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Discord Markdown Demo</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="../src/index.css">
+</head>
+<body>
+  <header></header>
+  <main>
+    <article>
+      <p>Demo page for @felixrydberg/discord-markdown</p>
+      <div>
+        <div class="checkbox">
+          <input id="export-checkbox" type="checkbox" checked>
+          <label for="export-checkbox">Show export as elements</label>
+        </div>
+      </div>
+    </article>
+    <section>
+      <label>Input</label>
+<textarea>
+```js
+import discordMarkdown from '(path to file)'
+console.log(discordMarkdown)
+```
+```c++
+int x = 0;
+Console.WriteLine(x);
+```
+```csharp
+int x = 0;
+Console.WriteLine(x);
+```
+# Heading 1
+## Heading 2
+### Heading 3
+#### Heading 4 (Not intended to work, Should have 1 extra #)
+##### Heading 5 (Not intended to work, Should have 2 extra #)
+###### Heading 6 (Not intended to work, Should have 3 extra #)
+####### Heading 7 (Not intended to work, Should have 4 extra #)
+- Item 1
+- Item 2
+  - Sub item 1
+  - Sub item 2
+- Item 3
+
+1. Item 1
+  1. Sub item 1
+  2. Sub item 2
+2. Item 2
+3. Item 3
+
+[Masked link](https://test.com)
+<[Wrapped Masked link](https://test.com)>
+Just a paragraph. Maybe with a [link](https://test.com). Seems to work.
+Does autolink work? https://test.com 
+Does the autolink unwrap? <https://test.com>
+</textarea>
+      <label>Output</label>
+      <section class="output-select theme-dark"></section>
+    </section>
+  </main>
+  <footer></footer>
+  <script type="module">
+    import discordMarkdown from '../dist/index.js'
+
+    const textarea = document.querySelector('textarea');
+    const output_section = document.querySelector('.output-select');
+    const checkbox = document.querySelector('#export-checkbox');
+
+    const handleEvent = () => {
+      if (checkbox.checked) {
+        output_section.innerHTML = discordMarkdown.render(textarea.value)
+      } else {
+        output_section.textContent = discordMarkdown.render(textarea.value)
+      }
+    }
+
+    textarea.addEventListener('input', handleEvent)
+    checkbox.addEventListener('input', handleEvent)
+    handleEvent();
+  </script>
+</body>
+</html>

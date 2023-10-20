@@ -11,6 +11,10 @@ test('Render injected into Vue', () => {
     .toBe(false);
   expect(typeof app.config.globalProperties.$highlightjs === 'object')
     .toBe(false);
+  expect(typeof app.config.globalProperties.$getNestedHTML === 'function')
+    .toBe(false);
+  expect(typeof app.config.globalProperties.$getHTML === 'function')
+    .toBe(false);
 });
 
 test('Simple-markdown injected into Vue', () => {
@@ -24,5 +28,19 @@ test('Highlightjs injected into Vue', () => {
   const app = createApp();
   app.use(markdown, {inject_instances: true});
   expect(typeof app.config.globalProperties.$highlightjs === 'object')
+    .toBe(true);
+});
+
+test('GetNestedHTML injected into Vue', () => {
+  const app = createApp();
+  app.use(markdown, {inject_parsers: true});
+  expect(typeof app.config.globalProperties.$getNestedHTML === 'function')
+    .toBe(true);
+});
+
+test('GetHTML injected into Vue', () => {
+  const app = createApp();
+  app.use(markdown, {inject_parsers: true});
+  expect(typeof app.config.globalProperties.$getHTML === 'function')
     .toBe(true);
 });
