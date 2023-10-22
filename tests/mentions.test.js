@@ -3,7 +3,7 @@ import { render } from '../src/index';
 
 test('User mentions are handled correctly', () => {
   expect(render('<@!252124921398951936>'))
-    .toBe('<span class="d-mention d-user">@252124921398951936</span>');
+    .toBe('<span class="d-mention d-user">@252124921398951936</span><br><br>');
 });
 
 test('Channel mentions are handled correctly', () => {

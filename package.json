@@ -4,8 +4,8 @@
   "version": "1.0.2",
   "description": "A markdown parser that matches Discords markdown spec.",
   "main": "./dist/index.js",
-  "source": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "source": "./src/index.js",
+  "types": "./src/index.d.ts",
   "files": [
     "./dist",
     "./src",

@@ -24,8 +24,7 @@ const patterns = {
   underline: /^(__)((?:(?!\1).)+)\1/,
   strikethrough: /^(~~)((?:(?!~~).)+)\1/,
 
-  // heading: /^ *(#{1,3})([^\n]+?)#* *(?:\n *)/,
-  heading: /^ *(#{1,3})( *.*)[\n]?/,
+  heading: /^ *(#{1,3})([^\n]+?)#* *(?:\n *)/,
   autolink: /^[^<]([^: >]+:\/[^ >]+)[^>]/,
   unwrap_autolink: /^<([^: >]+:\/[^ >]+)>/,
   link: /^\[([^\]]+)\]\(([(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&=]*))\)/,
@@ -65,9 +64,10 @@ const rules = {
     }
   }),
   br: Object.assign({ }, markdown.defaultRules.br, {
-    match: (source, state, prevCapture) => {
-      return markdown.anyScopeRegex(patterns.br)(source, state, prevCapture)
-    },
+    // match: (source, state, prevCapture) => {
+    //   console.log(source)
+    //   return markdown.anyScopeRegex(patterns.br)(source, state, prevCapture)
+    // },
     html: (node) => {
       return '<br>';
     },
@@ -511,7 +511,6 @@ export const render = (
     inEmphasis: false,
     escapeHTML: true,
     cssModuleNames: null,
-    disableAutoBlockNewlines: true,
     mentions: {
       user: node => '@' + markdown.sanitizeText(node.id),
       channel: node => '#' + markdown.sanitizeText(node.id),
