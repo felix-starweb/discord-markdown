@@ -18,10 +18,10 @@ test('Role mentions are handled correctly', () => {
 
 test('Everyone mentions are handled correctly', () => {
   expect(render('@everyone'))
-    .toBe('<span class="d-mention d-user">@everyone</span>');
+    .toBe('<span class="d-mention d-everyone">@everyone</span>');
 });
 
 test('Here mentions are handled correctly', () => {
   expect(render('@here'))
-    .toBe('<span class="d-mention d-user">@here</span>');
+    .toBe('<span class="d-mention d-here">@here</span>');
 });

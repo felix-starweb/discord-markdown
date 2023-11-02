@@ -28,6 +28,10 @@ textarea:focus {
   outline: none;
 }
 
+header > * {
+  flex-basis: 50%;
+}
+
 main > article > div{
   display: flex;
   justify-content: center;
@@ -41,7 +45,7 @@ main > section {
 }
 
 main > section label {
-  font-size: 16px;
+  font-size: 14px;
 }
 
 main > section > section,
@@ -53,7 +57,7 @@ main > section > textarea {
   padding: 16px;
   resize: none;
   color: white;
-  font-size: 16px;
+  font-size: 14px;
   overflow-y:  scroll;
   overflow-x: hidden;
 }
@@ -62,10 +66,57 @@ main > section > section {
   white-space: pre-wrap;
 }
 
-.checkbox {
-  
+.d-flex {
+  display: flex;
 }
 
+.justify-center {
+  justify-content: center;
+}
+
+.justify-space-between {
+  justify-content: space-between;
+}
+
+.align-center {
+  align-items: center;
+}
+
+.gap-12 {
+  gap: 12px;
+}
+
+.pa-4 {
+  padding: 16px;
+}
+
+button {
+  height: 48px;
+  padding: 0 32px;
+  background: rgba(var(--theme-background));
+  border-radius: 4px;
+  color: white;
+  border: 1px solid rgba(var(--theme-background-700), 0.5);
+  font-size: 14px;
+  font-family: 'Quicksand-Regular';
+  cursor: pointer;
+  transition-property: background-color;
+  transition-duration: 125ms;
+}
+
+button:hover {
+  background-color: rgba(var(--theme-background-700), 0.5);
+}
+
+@media screen and (max-width: 600px) {
+  header.d-flex {
+    flex-wrap: wrap;
+  }
+
+  header > * {
+    flex-basis: 100%;
+  }
+}
 *::-webkit-scrollbar-button {
   display: none;
 }

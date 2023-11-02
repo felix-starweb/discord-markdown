@@ -3,6 +3,9 @@
 import markdown from '@khanacademy/simple-markdown';
 import highlightjs from 'highlight.js';
 
+import * as index from './index.css';
+// import './index.d.ts';
+
 const patterns = {
   br: /^\n/,
   text: /^[\s\S]+?(?=[^0-9A-Za-z\s\u00c0-\uffff-]|\n\n|\n|\w+:\S|$)/,
@@ -14,22 +17,14 @@ const patterns = {
   everyone: /^@everyone/,
   here: /^@here/,
 
-  // Should follow the order of this article: https://gist.github.com/matthewzring/9f7bbfd102003963f9be7dbcf7d40e51
-  italics: /^([*_])((?:(?!\1).)+)\1/,
-  underline_italics: /^__\*([^*]+[^_]+)\*__/,
-  bold: /^(\*\*)((?:(?!\1).)+)\1/,
-  underline_bold: /^__\*\*([^*]+[^_]+)\*\*__/,
-  bold_italics: /^(\*\*\*)((?:(?!\1).)+)\1/,
-  underline_bold_italics: /^__\*\*\*([^*]+[^_]+)\*\*\*__/,
-  underline: /^(__)((?:(?!\1).)+)\1/,
-  strikethrough: /^(~~)((?:(?!~~).)+)\1/,
+  italics: /^\b_((?:__|\\[\s\S]|[^\\_])+?)_\b|^\*(?=\S)((?:\*\*|\\[\s\S]|\s+(?:\\[\s\S]|[^\s\*\\]|\*\*)|[^\s\*\\])+?)\*(?!\*)/,
+  bold: /^\*\*((?:\\[\s\S]|[^\\])+?)\*\*(?!\*)/,
+  underline: /^__((?:\\[\s\S]|[^\\])+?)__(?!_)/,
+  strikethrough: /^~~(?=\S)((?:\\[\s\S]|~(?!~)|[^\s~\\]|\s(?!~~))+?)~~/,
 
-  // heading: /^ *(#{1,3})([^\n]+?)#* *(?:\n *)/,
   heading: /^ *(#{1,3})( *.*)[\n]?/,
-  autolink: /^[^<]([^: >]+:\/[^ >]+)[^>]/,
-  unwrap_autolink: /^<([^: >]+:\/[^ >]+)>/,
+  autolink: /^<?(https?:\/\/[a-z0-9.]+)[>]?/,
   link: /^\[([^\]]+)\]\(([(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&=]*))\)/,
-  unwrap_link: /^\<(\[[^\]]+\]\([(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&=]*)\))\>/,
   unordered_lists: /^( *)((?:[*+-]|\d+\.)) [\s\S]+?(?:\n(?!\1(?:[*+-]|\d+\.|\s*) )|$)/,
   ordered_lists: /^( *)((?:\d.|\d+\.)) [\s\S]+?(?:\n(?!\1(?:\d.|\d+\.|\s*) )|$)/,
 
@@ -47,16 +42,20 @@ const patterns = {
   codeBlock: /^```(([a-z0-9+#]+?)\n+)?\n*([^]+?)\n*```/i,
 };
 
+const inlineRegex = (pattern) => {
+  return (source, state, prevCapture) => {
+    const initial = state.inline;
+    state.inline = true;
+    const result = markdown.inlineRegex(pattern)(source, state, prevCapture);
+    state.inline = initial;
+    return result;
+  };
+};
+
 const rules = {
   // General Rules
   text: Object.assign({ }, markdown.defaultRules.text, {
-    match: (source, state) => {
-      const initial = state.inline;
-      state.inline = true;
-      const result = markdown.inlineRegex(patterns.text)(source, state);
-      state.inline = initial;
-      return result;
-    },
+    match: inlineRegex(patterns.text),
     html: function (node, output, state) {
       if (state.escapeHTML){
         return markdown.sanitizeText(node.content);
@@ -66,7 +65,7 @@ const rules = {
   }),
   br: Object.assign({ }, markdown.defaultRules.br, {
     match: (source, state, prevCapture) => {
-      return markdown.anyScopeRegex(patterns.br)(source, state, prevCapture)
+      return markdown.anyScopeRegex(patterns.br)(source, state, prevCapture);
     },
     html: (node) => {
       return '<br>';
@@ -75,7 +74,7 @@ const rules = {
 
   // Discord Mentions
   '@user': {
-    order: markdown.defaultRules.strong.order,
+    order: 22,
     match: source => patterns.user.exec(source),
     parse: (capture) => {
       return {
@@ -85,7 +84,7 @@ const rules = {
     html: (node, output, state) => { return getHTML('span', state.mentions.user(node), { class: 'd-mention d-user' }); }
   },
   '#channel': {
-    order: markdown.defaultRules.strong.order,
+    order: 22,
     match: source => patterns.channel.exec(source),
     parse: (capture) => {
       return {
@@ -95,7 +94,7 @@ const rules = {
     html: (node, output, state) => { return getHTML('span', state.mentions.channel(node), { class: 'd-mention d-channel' }); }
   },
   '@role': {
-    order: markdown.defaultRules.strong.order,
+    order: 22,
     match: source => patterns.role.exec(source),
     parse: (capture) => {
       return {
@@ -105,108 +104,38 @@ const rules = {
     html: (node, output, state) => { return getHTML('span', state.mentions.role(node), { class: 'd-mention d-role' }); }
   },
   '@everyone': {
-    order: markdown.defaultRules.strong.order,
+    order: 22,
     match: source => patterns.everyone.exec(source),
     parse: () => {
       return {};
     },
-    html: (node, output, state) => { return getHTML('span', state.mentions.everyone(node), { class: 'd-mention d-user' }); }
+    html: (node, output, state) => { return getHTML('span', state.mentions.everyone(node), { class: 'd-mention d-everyone' }); }
   },
   '@here': {
-    order: markdown.defaultRules.strong.order,
+    order: 22,
     match: source => patterns.here.exec(source),
     parse: () => {
       return {};
     },
-    html: (node, output, state) => { return getHTML('span', state.mentions.here(node), { class: 'd-mention d-user' }); }
+    html: (node, output, state) => { return getHTML('span', state.mentions.here(node), { class: 'd-mention d-here' }); }
   },
 
   // Text Formatting
-  italics: {
-    order: 22,
-    match: source => patterns.italics.exec(source),
-    parse: (capture) => {
-      return {
-        content: capture[2]
-      };
-    },
-    html: (node, output, state) => { return getHTML('span', node.content, { class: 'd-text d-italics' }, state); }
-  },
-  underline_italics: {
-    order: 21,
-    match: source => patterns.underline_italics.exec(source),
-    parse: (capture) => {
-      return {
-        content: capture[1]
-      };
-    },
-    html: (node, output, state) => { return getHTML('span', node.content, { class: 'd-text d-underline-italics' }, state); }
-  },
-  bold: {
-    order: 22,
-    match: source => patterns.bold.exec(source),
-    parse: (capture) => {
-      return {
-        content: capture[2]
-      };
-    },
-    html: (node, output, state) => { return getHTML('span', node.content, { class: 'd-text d-bold' }, state); }
-  },
-  underline_bold: {
-    order: 21,
-    match: source => patterns.underline_bold.exec(source),
-    parse: (capture) => {
-      return {
-        content: capture[1]
-      };
-    },
-    html: (node, output, state) => { return getHTML('span', node.content, { class: 'd-text d-underline-bold' }, state); }
-  },
-  bold_italics: {
-    order: 21,
-    match: source => patterns.bold_italics.exec(source),
-    parse: (capture) => {
-      return {
-        content: capture[2]
-      };
-    },
-    html: (node, output, state) => { return getHTML('span', node.content, { class: 'd-text d-bold-italics' }, state); }
-  },
-  underline_bold_italics: {
-    order: 21,
-    match: source => patterns.underline_bold_italics.exec(source),
-    parse: (capture) => {
-      return {
-        content: capture[1]
-      };
-    },
-    html: (node, output, state) => { return getHTML('span', node.content, { class: 'd-text d-underline-bold-italics' }, state); }
-  },
-  underline: {
-    order: 22,
-    match: source => patterns.underline.exec(source),
-    parse: (capture) => {
-      return {
-        content: capture[2]
-      };
-    },
-    html: (node, output, state) => { return getHTML('span', node.content, { class: 'd-text d-underline' }, state); }
-  },
-  strikethrough: {
-    order: 22,
-    match: source => patterns.strikethrough.exec(source),
-    parse: (capture) => {
-      return {
-        content: capture[2]
-      };
-    },
-    html: (node, output, state) => { return getHTML('span', node.content, { class: 'd-text d-strikethrough' }, state); }
-  },
-  em: Object.assign({ }, markdown.defaultRules.em, {
-    parse: function (capture, parse, state) {
-      const parsed = markdown.defaultRules.em.parse(capture, parse, Object.assign({ }, state, { inEmphasis: true }));
-      return state.inEmphasis ? parsed.content : parsed;
-    },
+  italics: Object.assign({}, markdown.defaultRules.em, {
+    match: inlineRegex(patterns.italics),
+    html: (node, output, state) => { return getHTML('em', output(node.content, state), { class: 'd-text d-italics' }, state); }
+  }),
+  bold: Object.assign({}, markdown.defaultRules.strong, {
+    match: inlineRegex(patterns.bold),
+    html: (node, output, state) => { return getHTML('strong', output(node.content, state), { class: 'd-text d-bold' }, state); }
+  }),
+  underline: Object.assign({}, markdown.defaultRules.u, {
+    match: inlineRegex(patterns.underline),
+    html: (node, output, state) => { return getHTML('u', output(node.content, state), { class: 'd-text d-underline' }, state); }
+  }),
+  strikethrough: Object.assign({}, markdown.defaultRules.del, {
+    match: inlineRegex(patterns.strikethrough),
+    html: (node, output, state) => { return getHTML('del', output(node.content, state), { class: 'd-text d-strikethrough' }, state); }
   }),
 
   // Organizational Text Formatting 
@@ -282,7 +211,7 @@ const rules = {
   }),
 
   // Block quotes
-  blockQuote: Object.assign({ }, markdown.defaultRules.blockQuote, {
+  blockQuote: Object.assign({}, markdown.defaultRules.blockQuote, {
     match: (source, state, prevSource) => {
       return !/^$|\n *$/.test(prevSource) || state.inQuote ? null : /^( *>>> ([\s\S]*))|^( *> [^\n]*(\n *> [^\n]*)*\n?)/.exec(source);
     },
@@ -299,14 +228,8 @@ const rules = {
   }),
 
   // Code block
-  codeBlock: Object.assign({ }, markdown.defaultRules.codeBlock, {
-    match: (source, state, prevCapture) => {
-      const initial = state.inline;
-      state.inline = true;
-      const capture = markdown.inlineRegex(patterns.codeBlock)(source, state, prevCapture);
-      state.inline = initial;
-      return capture;
-    },
+  codeBlock: Object.assign({}, markdown.defaultRules.codeBlock, {
+    match: inlineRegex(patterns.codeBlock),
     parse: (capture, parse, state) => {
       return {
         lang: (capture[2] || '').trim(),
@@ -321,10 +244,10 @@ const rules = {
       }
       return getHTML('pre', getHTML(
         'code', code ? code.value : markdown.sanitizeText(node.content), { class: `hljs ${code ? 'language-' + code.language : ''}` }, state
-      ), null, state);
+      ), { class: 'd-code' }, state);
     }
   }),
-  inlineCode: Object.assign({ }, markdown.defaultRules.inlineCode, {
+  inlineCode: Object.assign({}, markdown.defaultRules.inlineCode, {
     match: source => markdown.defaultRules.inlineCode.match.regex.exec(source),
     html: (node, output, state) => {
       return getHTML('code', markdown.sanitizeText(node.content.trim()), {class: 'd-inline-code'});
@@ -348,63 +271,14 @@ const rules = {
 
 const embeded = {
   link: Object.assign({}, markdown.defaultRules.link, {
-    match: (source, state) => {
-      const initial = state.inline;
-      state.inline = true;
-      const result = markdown.inlineRegex(patterns.link)(source, state);
-      state.inline = initial;
-      return result;
-    },
+    match: inlineRegex(patterns.link),
     html: (node, output, state) => { return getHTML('a', output(node.content, state), { class: 'd-masked-link', href: node.target }); }
   }),
-  unwrap_link: Object.assign({}, markdown.defaultRules.link, {
-    match: (source, state) => {
-      const initial = state.inline;
-      state.inline = true;
-      const result = markdown.inlineRegex(patterns.unwrap_link)(source, state);
-      state.inline = initial;
-      return result;
-    },
-    parse: (capture) => {
-      return {
-        content: capture[1],
-      };
-    },
-    html: (node, output, state) => {
-      if (state.escapeHTML) {
-        return markdown.sanitizeText(node.content);
-      }
-      return node.content;
-    }
-  }),
   autolink: Object.assign({}, markdown.defaultRules.autolink, {
-    order: markdown.defaultRules.link.order + 1,
-    match: (source, state) => {
-      const initial = state.inline;
-      state.inline = true;
-      const result = markdown.inlineRegex(patterns.autolink)(source, state);
-      state.inline = initial;
-      return result;
-    },
+    match: inlineRegex(patterns.autolink),
     parse: (capture) => {
       return {
-        content: capture[0] 
-      };
-    },
-    html: (node, output, state) => { return getHTML('a', node.content, { class: 'd-auto-link', href: node.content }); }
-  }),
-  unwrap_autolink: Object.assign({}, markdown.defaultRules.autolink, {
-    order: markdown.defaultRules.link.order + 1,
-    match: (source, state) => {
-      const initial = state.inline;
-      state.inline = true;
-      const result = markdown.inlineRegex(patterns.unwrap_autolink)(source, state);
-      state.inline = initial;
-      return result;
-    },
-    parse: (capture) => {
-      return {
-        content: capture[1] 
+        content: capture[1]
       };
     },
     html: (node, output, state) => { return getHTML('a', node.content, { class: 'd-auto-link', href: node.content }); }
@@ -416,16 +290,6 @@ const embeded = {
  * @param {String} tag Wrapping HTML tag.
  * @param {String} content Content of element.
  * @param {Object} attributes Attributes of element.
- * @param {Object} [state] Simplemarkdown state object.
- * @param {Boolean} [state.inline=false] Simplemarkdown state object.
- * @param {Boolean} [state.inQuote=false] Simplemarkdown state object.
- * @param {Boolean} [state.inEmphasis=false] Simplemarkdown state object.
- * @param {Object} [state.mentions] Simplemarkdown state object.
- * @param {Function} [state.mentions.user] Simplemarkdown state object.
- * @param {Function} [state.mentions.channel] Simplemarkdown state object.
- * @param {Function} [state.mentions.role] Simplemarkdown state object.
- * @param {Function} [state.mentions.everyone] Simplemarkdown state object.
- * @param {Function} [state.mentions.here] Simplemarkdown state object.
  * @param {Boolean} [closed=true] Set to false if element is single tag.
  * @returns {String}
 */
@@ -480,10 +344,9 @@ const getNestedHTML = (items, options = {
  * @param {Boolean} [options.embed=true] If links should be embeded.
  * @param {Boolean} [options.includeDefault=true] If default rules are to be used.
  * @param {Object} [state] Simplemarkdown state object.
- * @param {Boolean} [state.inline=false] Simplemarkdown state object.
- * @param {Boolean} [state.inQuote=false] Simplemarkdown state object.
- * @param {Boolean} [state.inEmphasis=false] Simplemarkdown state object.
- * @param {Object} [state.mentions] Simplemarkdown state object.
+ * @param {Boolean} [state.inline=false] Simplemarkdown inline setting.
+ * @param {Boolean} [state.disableAutoBlockNewlines=true] Simplemarkdown disableAutoBlockNewLines setting.
+ * @param {Object} [state.mentions] Object for discord mention functions.
  * @param {Function} [state.mentions.user] Simplemarkdown state object.
  * @param {Function} [state.mentions.channel] Simplemarkdown state object.
  * @param {Function} [state.mentions.role] Simplemarkdown state object.
@@ -507,10 +370,6 @@ export const render = (
   const _rules = {};
   const _state = {
     inline: false,
-    inQuote: false,
-    inEmphasis: false,
-    escapeHTML: true,
-    cssModuleNames: null,
     disableAutoBlockNewlines: true,
     mentions: {
       user: node => '@' + markdown.sanitizeText(node.id),

@@ -20,6 +20,11 @@ ul, ol {
   margin: 8px 0px;
 }
 
+ul.d-list.d-unordered-lists,
+ol.d-list.d-ordered-lists {
+  padding-inline-start: 40px;
+}
+
 p {
   margin: 0;
 }

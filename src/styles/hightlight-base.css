@@ -5,3 +5,7 @@ pre {
 code {
   border-radius: 4px;
 }
+
+.hljs * {
+  font-family: monospace;
+}
