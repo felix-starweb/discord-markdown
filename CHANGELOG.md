@@ -1,3 +1,7 @@
+# [1.1.1] (2023-11-03)
+- Added
+  - Npm package install to documentation.
+
 # [1.1.0] (2023-11-03)
 
 - Added

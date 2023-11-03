@@ -1,6 +1,7 @@
 # @felixrydberg
 
 ## Table of Contents
+* [Npm Install](#npm-install)
 * [Plugin](#plugin)
   * [Plugin install](#install)
   * [Plugin options](#options)
@@ -10,6 +11,11 @@
   * [getHTML](#gethtml)
   * [getNestedHTML](#getnestedhtml)
 * [Usage outside of npm](#usage-outside-of-npm)
+
+### Npm Install:
+```bash
+npm install @felixrydberg/discord-markdown
+```
 
 ## Plugin:
 ### Install:
