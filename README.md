@@ -142,7 +142,7 @@ app.use(markdown);
 Since these are custom built functions that needs to be implemented on "your end" (Person using this library) there are some prerequisites. The parameter provided is the return from the parse function. The expected return is the content of the element. Default value returns the ID provided.
 
 ## Usage outside of npm:
-- Get the latest version from the [./dist/discord-markdown.min.js](https://github.com/felixrydberg/discord-markdown/blob/main/dist/discord-markdown.min.js)
+- Get the latest version from the [./dist/index.js](https://github.com/felixrydberg/discord-markdown/blob/main/dist/index.js)
 - Remember type has to be set to module ```<script type="module" src="(path to file)"></script>```
 
   ```html
