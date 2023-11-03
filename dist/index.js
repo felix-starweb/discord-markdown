@@ -15,9 +15,9 @@ const ql = (n, e) => {
       globalThis.__perseus_debug__[n] = a;
   } else
     console.warn(`globalThis not found found (${a})`);
-}, S_ = "@khanacademy/perseus-core", g_ = "1.1.2";
+}, S_ = "@khanacademy/perseus-core", g_ = "1.2.0";
 ql(S_, g_);
-const T_ = "@khanacademy/simple-markdown", b_ = "0.10.2";
+const T_ = "@khanacademy/simple-markdown", b_ = "0.10.3";
 ql(T_, b_);
 var R_ = /\r\n?/g, f_ = /\t/g, C_ = /\f/g, Hl = function(e) {
   return e.replace(R_, `
