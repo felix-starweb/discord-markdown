@@ -1,3 +1,8 @@
+# [1.1.2] (2023-11-19)
+- Fixed
+  - Package.json exports updated to include style, type and require files.
+  - Issue with Install code example in README
+
 # [1.1.1] (2023-11-03)
 - Added
   - Npm package install to documentation.

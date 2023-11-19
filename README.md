@@ -26,10 +26,10 @@ import DiscordMarkdown from '@felixrydberg/discord-markdown';
 const app = createApp();
 
 // All inject options
-app.use(markdown {inject_instances: true, inject_parsers: true});
+app.use(DiscordMarkdown, {inject_instances: true, inject_parsers: true});
 
 // No inject options
-app.use(markdown);
+app.use(DiscordMarkdown);
 ```
 
 ### Options:
