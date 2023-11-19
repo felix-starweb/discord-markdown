@@ -1,23 +1,31 @@
 {
   "type": "module",
   "name": "@felixrydberg/discord-markdown",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "A markdown parser that matches Discords markdown spec.",
   "main": "./dist/index.js",
   "source": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "style": "./dist/style.css",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "require": "./dist/index.umd.cjs"
-    }
-  },
+  "styles": "./dist/style.css",
   "files": [
     "./dist",
     "./src",
     "CHANGELOG.md"
   ],
+  "exports": {
+    ".": {
+      "style": "./dist/style.css",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.umd.cjs"
+    },
+    "./dist": {
+      "style": "./style.css",
+      "types": "./index.d.ts",
+      "import": "./index.js",
+      "require": "./index.umd.cjs"
+    }
+  },
   "scripts": {
     "build": "npx vite build",
     "tests": "vitest",
