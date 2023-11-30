@@ -1,3 +1,7 @@
+# [1.1.3] (2023-11-30)
+- Fixed
+  - Vue plugin options wasnt marked as optional
+
 # [1.1.2] (2023-11-19)
 - Fixed
   - Package.json exports updated to include style, type and require files.
