@@ -7,7 +7,7 @@ export interface DiscordMarkdownOptions {
 }
 
 export interface DiscordMarkdown {
-  install: (vue: VueElement, options: {}) => void,
+  install: (vue: VueElement, options?: {}) => void,
   render: (
     source: string,
     options: {
