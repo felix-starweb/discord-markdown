@@ -1,3 +1,7 @@
+# [1.1.4] (2023-11-30)
+- Fixed
+  - Vue plugin options wasnt marked as optional
+
 # [1.1.3] (2023-11-30)
 - Fixed
   - Vue plugin options wasnt marked as optional

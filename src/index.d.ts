@@ -49,13 +49,13 @@ declare module '@vue/runtime-core' {
   interface ComponentCustomProperties {
     $md_render: (
       source: string,
-      options: {
+      options?: {
         includeDefault: boolean,
         classes: boolean,
         embed: boolean,
       },
-      state: State,
-      extensions: Array<{
+      state?: State,
+      extensions?: Array<{
         order: number,
         match: MatchFunction,
         parse: ParseFunction,
